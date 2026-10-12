@@ -57,6 +57,16 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;padding
 .entry .ml.sein{color:var(--rose)}
 .entry .du{font-size:13px;color:var(--muted)}
 .entry .act button{padding:8px 10px;font-size:13px;margin-left:4px}
+.nfbox{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.nftog{display:flex;align-items:center;gap:12px;width:100%;background:transparent;color:var(--beige);padding:0;font-size:15px;text-align:left}
+.nftog .sw{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:0 0 auto;transition:.2s}
+.nftog .sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:.2s}
+.nftog.on .sw{background:var(--red)}
+.nftog.on .sw::after{left:23px;background:#fff}
+.nftog.on{color:var(--red)}
+#resteWrap{margin-top:12px;display:none}
+.nf{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;letter-spacing:.5px}
+.stat.red .v{color:var(--red)}
 .empty{color:var(--muted);text-align:center;padding:14px 0;font-size:14px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:8px 4px;border-bottom:1px solid var(--line)}
@@ -93,6 +103,7 @@ td.n,th.n{text-align:right}
 </style>
 </head>
 <body>
+<noscript><div style="background:#d9675a;color:#fff;padding:14px;border-radius:12px;margin-bottom:14px;font-weight:600;line-height:1.4">⚠️ Cette fiche est ouverte en mode « aperçu », donc les boutons ne marchent pas.<br>Ouvre-la avec Chrome ou Safari, ou utilise le lien internet qu'on t'a envoyé.</div></noscript>
 <div class="app">
   <header>
     <div>
@@ -126,10 +137,14 @@ td.n,th.n{text-align:right}
       <div><label>Heure</label><input type="time" id="fHeure"></div>
     </div>
     <div class="grid2" id="fieldsRow">
-      <div id="mlWrap"><label>Quantité (ml)</label><input type="number" id="fMl" inputmode="numeric" min="0" placeholder="ex : 90"></div>
+      <div id="mlWrap"><label>Quantité donnée (ml)</label><input type="number" id="fMl" inputmode="numeric" min="0" placeholder="ex : 90"></div>
       <div><label id="dureeLabel">Durée (min)</label><input type="number" id="fDuree" inputmode="numeric" min="0" placeholder="ex : 15"></div>
     </div>
     <div class="quick" id="quickMl"></div>
+    <div class="nfbox" id="nfWrap">
+      <button type="button" class="nftog" id="nfTog" onclick="toggleNF()"><span class="sw"></span><span>Biberon non fini <b>(N.F)</b></span></button>
+      <div id="resteWrap"><label>Reste dans le biberon (ml) — facultatif</label><input type="number" id="fReste" inputmode="numeric" min="0" placeholder="ex : 30"></div>
+    </div>
     <div class="row" style="margin-top:14px">
       <button class="btn" onclick="saveEntry()" id="saveBtn">✓ Enregistrer</button>
       <button class="btn2" onclick="cancelEdit()" id="cancelBtn" style="display:none;flex:0 0 auto">Annuler</button>
@@ -149,6 +164,7 @@ td.n,th.n{text-align:right}
       <div class="stat"><div class="v" id="sMoy">–</div><div class="l">Moyenne / biberon</div></div>
       <div class="stat"><div class="v" id="sDuree">–</div><div class="l">Temps biberons</div></div>
       <div class="stat"><div class="v" id="sDureeMoy">–</div><div class="l">Durée moy. biberon</div></div>
+      <div class="stat red big"><div class="v" id="sNF">0</div><div class="l">Biberons non finis (N.F)</div></div>
       <div class="stat rose"><div class="v" id="sTCount">0</div><div class="l">Tétées</div></div>
       <div class="stat rose"><div class="v" id="sTDuree">–</div><div class="l">Temps au sein</div></div>
       <div class="stat rose big"><div class="v" id="sTMoy">–</div><div class="l">Durée moyenne / tétée</div></div>
@@ -233,11 +249,27 @@ function dayEntries(d){return data.entries.filter(e=>e.date===d).sort((a,b)=>a.t
 function dayStats(d){
   const es=dayEntries(d);
   const bib=es.filter(e=>e.type!=='sein'),sein=es.filter(e=>e.type==='sein');
-  const total=bib.reduce((s,e)=>s+(+e.ml||0),0);
+  const total=bib.reduce((s,e)=>s+bu(e),0);
+  const nfCount=bib.filter(e=>e.nf).length;
   const bDur=bib.filter(e=>+e.duree>0);const dur=bDur.reduce((s,e)=>s+(+e.duree),0);
   const tDur=sein.reduce((s,e)=>s+(+e.duree||0),0);
   return{es,count:bib.length,total,moy:bib.length?Math.round(total/bib.length):0,dur,durMoy:bDur.length?dur/bDur.length:0,
-         tCount:sein.length,tDur,tMoy:sein.length?tDur/sein.length:0};
+         tCount:sein.length,tDur,tMoy:sein.length?tDur/sein.length:0,nfCount};
+}
+function bu(e){return Math.max(0,(+e.ml||0)-(e.nf?(+e.reste||0):0))}
+function bibLabel(e){
+  if(!e.nf)return e.ml+' ml';
+  return +e.reste?`${bu(e)} ml bus / ${e.ml} (reste ${e.reste})`:`${e.ml} ml donnés`;
+}
+
+/* ---------- N.F ---------- */
+let nfOn=false;
+function toggleNF(){setNF(!nfOn)}
+function setNF(v){
+  nfOn=v;
+  document.getElementById('nfTog').classList.toggle('on',v);
+  document.getElementById('resteWrap').style.display=v?'block':'none';
+  if(!v)document.getElementById('fReste').value='';
 }
 
 /* ---------- TYPE ---------- */
@@ -250,6 +282,7 @@ function applyType(){
   document.querySelectorAll('#typeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   document.getElementById('mlWrap').style.display=sein?'none':'';
   document.getElementById('quickMl').style.display=sein?'none':'';
+  document.getElementById('nfWrap').style.display=sein?'none':'';
   document.getElementById('fieldsRow').style.gridTemplateColumns=sein?'1fr':'1fr 1fr';
   document.getElementById('dureeLabel').textContent=sein?'Durée de la tétée (min)':'Durée (min)';
   document.getElementById('chronoTitle').textContent=sein?'Tétée en cours':'Biberon en cours';
@@ -272,6 +305,7 @@ function render(){
   document.getElementById('sMoy').textContent=st.count?st.moy+' ml':'–';
   document.getElementById('sDuree').textContent=fmtMin(st.dur);
   document.getElementById('sDureeMoy').textContent=fmtMin(st.durMoy);
+  document.getElementById('sNF').textContent=st.count?st.nfCount+' / '+st.count:'0';
   document.getElementById('sTCount').textContent=st.tCount;
   document.getElementById('sTDuree').textContent=fmtMin(st.tDur);
   document.getElementById('sTMoy').textContent=fmtMin(st.tMoy);
@@ -282,7 +316,7 @@ function render(){
   if(last&&viewDate===today()){
     const[y,m,d]=last.date.split('-').map(Number);const[h,mi]=last.time.split(':').map(Number);
     const diff=(Date.now()-new Date(y,m-1,d,h,mi).getTime())/60000;
-    const what=last.type==='sein'?'tétée '+fmtMin(last.duree):last.ml+' ml';
+    const what=last.type==='sein'?'tétée '+fmtMin(last.duree):bibLabel(last)+(last.nf?' · N.F':'');
     sinceEl.innerHTML=diff>=0?`Dernier repas il y a <b>${fmtMin(diff)||'0 min'}</b> (${last.time} · ${what})`:'';
   }else sinceEl.innerHTML='';
   // list
@@ -293,7 +327,7 @@ function render(){
     if(i>0){const[h1,m1]=st.es[i-1].time.split(':').map(Number);const[h2,m2]=e.time.split(':').map(Number);gap=' · écart '+fmtMin((h2*60+m2)-(h1*60+m1));}
     const main=e.type==='sein'
       ?`<div class="ml sein">🤱 Tétée · ${fmtMin(e.duree)}</div><div class="du">au sein${gap}</div>`
-      :`<div class="ml">🍼 ${e.ml} ml</div><div class="du">${+e.duree?e.duree+' min':'durée non notée'}${gap}</div>`;
+      :`<div class="ml">🍼 ${bibLabel(e)}${e.nf?'<span class="nf">N.F</span>':''}</div><div class="du">${+e.duree?e.duree+' min':'durée non notée'}${gap}</div>`;
     return`<div class="entry"><div class="h">${e.time}</div><div class="info">${main}</div><div class="act"><button class="btn2" onclick="editEntry('${e.id}')">✏️</button><button class="btn2" onclick="delEntry('${e.id}')">🗑</button></div></div>`;
   }).join('');
   // history
@@ -301,7 +335,7 @@ function render(){
   const stats=days.map(d=>({d,...dayStats(d)}));
   const max=Math.max(1,...stats.map(x=>x.total));
   document.getElementById('bars').innerHTML=stats.map(x=>`<div class="bar"><div class="bv">${x.total||''}</div><div class="b" style="height:${x.total/max*80}%"></div><div class="bl">${shortDay(x.d).split(' ')[0]}</div></div>`).join('');
-  document.getElementById('histo').innerHTML=[...stats].reverse().map(x=>`<tr><td style="text-transform:capitalize">${shortDay(x.d)}</td><td class="n">${x.count}</td><td class="n">${x.total} ml</td><td class="n">${x.tCount}</td><td class="n">${fmtMin(x.tDur)}</td></tr>`).join('');
+  document.getElementById('histo').innerHTML=[...stats].reverse().map(x=>`<tr><td style="text-transform:capitalize">${shortDay(x.d)}</td><td class="n">${x.count}${x.nfCount?' <span style="color:var(--red);font-size:11px">('+x.nfCount+' N.F)</span>':''}</td><td class="n">${x.total} ml</td><td class="n">${x.tCount}</td><td class="n">${fmtMin(x.tDur)}</td></tr>`).join('');
   applyType();
 }
 function ageText(b){
@@ -317,6 +351,7 @@ function resetForm(){
   document.getElementById('fHeure').value=nowTime();
   document.getElementById('fMl').value='';
   document.getElementById('fDuree').value='';
+  setNF(false);
   editId=null;
   document.getElementById('saveBtn').textContent='✓ Enregistrer';
   document.getElementById('cancelBtn').style.display='none';
@@ -331,8 +366,11 @@ function saveEntry(){
   if(!date||!time){toast('Date et heure requises');return}
   if(type==='bib'&&!(ml>0)){toast('Indique la quantité en ml');return}
   if(type==='sein'&&!(duree>0)){toast('Indique la durée de la tétée');return}
-  if(editId){const e=data.entries.find(x=>x.id===editId);Object.assign(e,{type,date,time,ml,duree});toast('Modifié')}
-  else{data.entries.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),type,date,time,ml,duree});toast(type==='sein'?'Tétée enregistrée ✓':'Biberon enregistré ✓')}
+  const nf=type==='bib'&&nfOn;
+  const reste=nf?(parseInt(document.getElementById('fReste').value,10)||0):0;
+  if(reste>=ml&&nf){toast('Le reste doit être inférieur à la quantité donnée');return}
+  if(editId){const e=data.entries.find(x=>x.id===editId);Object.assign(e,{type,date,time,ml,duree,nf,reste});toast('Modifié')}
+  else{data.entries.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),type,date,time,ml,duree,nf,reste});toast(type==='sein'?'Tétée enregistrée ✓':'Biberon enregistré ✓')}
   save();viewDate=date;resetForm();render();
 }
 function editEntry(id){
@@ -341,6 +379,7 @@ function editEntry(id){
   editId=id;data.mode=e.type||'bib';
   document.getElementById('fDate').value=e.date;document.getElementById('fHeure').value=e.time;
   document.getElementById('fMl').value=e.ml||'';document.getElementById('fDuree').value=e.duree||'';
+  setNF(!!e.nf);document.getElementById('fReste').value=e.reste||'';
   applyType();
   document.getElementById('formTitle').textContent=e.type==='sein'?'Modifier la tétée':'Modifier le biberon';
   document.getElementById('saveBtn').textContent='✓ Mettre à jour';
@@ -417,16 +456,17 @@ function exportPDF(n){
   let tot=0,cnt=0,tc=0,td=0;
   let html=`<h1>Suivi des repas${s.name?' — '+esc(s.name):''}</h1><div class="ps">${n===1?longDay(end):'Du '+longDay(filled[filled.length-1])+' au '+longDay(filled[0])}${s.birth?' · Âge : '+ageText(s.birth):''} · Édité le ${new Date().toLocaleDateString('fr-FR')}</div>`;
   if(n>1){
-    html+=`<h2>Récapitulatif</h2><table><thead><tr><th>Jour</th><th class="n">Biberons</th><th class="n">Total</th><th class="n">Moy./bib.</th><th class="n">Tétées</th><th class="n">Temps sein</th></tr></thead><tbody>`;
-    filled.forEach(d=>{const st=dayStats(d);tot+=st.total;cnt+=st.count;tc+=st.tCount;td+=st.tDur;html+=`<tr><td style="text-transform:capitalize">${longDay(d)}</td><td class="n">${st.count}</td><td class="n">${st.total} ml</td><td class="n">${st.count?st.moy+' ml':'–'}</td><td class="n">${st.tCount}</td><td class="n">${fmtMin(st.tDur)}</td></tr>`});
+    html+=`<h2>Récapitulatif</h2><table><thead><tr><th>Jour</th><th class="n">Biberons</th><th class="n">N.F</th><th class="n">Total</th><th class="n">Moy./bib.</th><th class="n">Tétées</th><th class="n">Temps sein</th></tr></thead><tbody>`;
+    let nfT=0;
+    filled.forEach(d=>{const st=dayStats(d);tot+=st.total;cnt+=st.count;tc+=st.tCount;td+=st.tDur;nfT+=st.nfCount;html+=`<tr><td style="text-transform:capitalize">${longDay(d)}</td><td class="n">${st.count}</td><td class="n">${st.nfCount}</td><td class="n">${st.total} ml</td><td class="n">${st.count?st.moy+' ml':'–'}</td><td class="n">${st.tCount}</td><td class="n">${fmtMin(st.tDur)}</td></tr>`});
     const nd=filled.length;
-    html+=`<tr class="tot"><td>Moyenne / jour (${nd} j)</td><td class="n">${(cnt/nd).toFixed(1)}</td><td class="n">${Math.round(tot/nd)} ml</td><td class="n">${cnt?Math.round(tot/cnt)+' ml':'–'}</td><td class="n">${(tc/nd).toFixed(1)}</td><td class="n">${fmtMin(td/nd)}</td></tr></tbody></table>`;
+    html+=`<tr class="tot"><td>Moyenne / jour (${nd} j)</td><td class="n">${(cnt/nd).toFixed(1)}</td><td class="n">${nfT} au total</td><td class="n">${Math.round(tot/nd)} ml</td><td class="n">${cnt?Math.round(tot/cnt)+' ml':'–'}</td><td class="n">${(tc/nd).toFixed(1)}</td><td class="n">${fmtMin(td/nd)}</td></tr></tbody></table>`;
   }
   filled.forEach(d=>{
     const st=dayStats(d);
     html+=`<div class="day"><h2>${longDay(d)}</h2><table><thead><tr><th>Heure</th><th>Type</th><th class="n">Quantité</th><th class="n">Durée</th></tr></thead><tbody>`;
-    st.es.forEach(e=>{const sein=e.type==='sein';html+=`<tr><td>${e.time}</td><td>${sein?'Tétée (sein)':'Biberon'}</td><td class="n">${sein?'–':e.ml+' ml'}</td><td class="n">${+e.duree?fmtMin(e.duree):'–'}</td></tr>`});
-    html+=`<tr class="tot"><td colspan="2">${st.count} biberon${st.count>1?'s':''} · ${st.tCount} tétée${st.tCount>1?'s':''}</td><td class="n">${st.total} ml</td><td class="n">Sein : ${fmtMin(st.tDur)}</td></tr></tbody></table></div>`;
+    st.es.forEach(e=>{const sein=e.type==='sein';html+=`<tr><td>${e.time}</td><td>${sein?'Tétée (sein)':(e.nf?'<b>Biberon N.F</b>':'Biberon')}</td><td class="n">${sein?'–':bibLabel(e)}</td><td class="n">${+e.duree?fmtMin(e.duree):'–'}</td></tr>`});
+    html+=`<tr class="tot"><td colspan="2">${st.count} biberon${st.count>1?'s':''}${st.nfCount?' (dont '+st.nfCount+' N.F)':''} · ${st.tCount} tétée${st.tCount>1?'s':''}</td><td class="n">${st.total} ml</td><td class="n">Sein : ${fmtMin(st.tDur)}</td></tr></tbody></table></div>`;
   });
   document.getElementById('printArea').innerHTML=html;
   const old=document.title;document.title='Repas-'+(s.name||'bebe')+'-'+end;
