@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#14110c">
+<title>Suivi Bébé</title>
+<style>
+:root{
+  --bg:#14110c;--card:#1f1a12;--card2:#2a2318;--gold:#d4a843;--gold2:#f0d48a;
+  --beige:#efe4cc;--muted:#a8997a;--line:#3a3022;--red:#d9675a;--green:#7fbf7a;--rose:#e3a3a0;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--beige);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:16px;padding:16px 16px 90px;max-width:560px;margin:0 auto}
+h1{font-size:22px;color:var(--gold2);letter-spacing:.5px}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.card h2{font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:12px}
+.card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 8px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+input{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--beige);border-radius:10px;padding:12px;font-size:17px;font-family:inherit}
+input:focus{outline:none;border-color:var(--gold)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mb{margin-bottom:10px}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:600}
+.btn{background:var(--gold);color:#1a140a;width:100%}
+.btn2{background:var(--card2);color:var(--gold2);border:1px solid var(--line)}
+.btn-green{background:var(--green);color:#0f1a0e}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
+.seg button{flex:1;background:transparent;color:var(--muted);padding:11px 6px;font-size:15px;border-radius:9px}
+.seg button.on{background:var(--gold);color:#1a140a}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.quick button{flex:1;min-width:56px;padding:9px 6px;font-size:14px;background:var(--card2);color:var(--beige);border:1px solid var(--line)}
+.timer{text-align:center;padding:2px 0 4px}
+.timer .t{font-size:42px;font-weight:700;color:var(--gold2);font-variant-numeric:tabular-nums}
+.timer .s{font-size:13px;color:var(--muted);margin-bottom:12px}
+.daynav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.daynav button{padding:10px 14px}
+.daynav .d{text-align:center;font-weight:600;color:var(--gold2);text-transform:capitalize;font-size:15px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card2);border-radius:12px;padding:12px;text-align:center}
+.stat .v{font-size:24px;font-weight:700;color:var(--gold2)}
+.stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.stat.big{grid-column:span 2}
+.stat.big .v{font-size:34px}
+.stat.rose .v{color:var(--rose)}
+.since{text-align:center;font-size:14px;color:var(--muted);margin-top:12px}
+.since b{color:var(--beige)}
+.entry{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.entry:last-child{border-bottom:none}
+.entry .h{font-weight:700;color:var(--gold2);width:56px;font-size:17px}
+.entry .info{flex:1}
+.entry .ml{font-size:17px;font-weight:600}
+.entry .ml.sein{color:var(--rose)}
+.entry .du{font-size:13px;color:var(--muted)}
+.entry .act button{padding:8px 10px;font-size:13px;margin-left:4px}
+.nfbox{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.nftog{display:flex;align-items:center;gap:12px;width:100%;background:transparent;color:var(--beige);padding:0;font-size:15px;text-align:left}
+.nftog .sw{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:0 0 auto;transition:.2s}
+.nftog .sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:.2s}
+.nftog.on .sw{background:var(--red)}
+.nftog.on .sw::after{left:23px;background:#fff}
+.nftog.on{color:var(--red)}
+#resteWrap{margin-top:12px;display:none}
+.nf{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;letter-spacing:.5px}
+.stat.red .v{color:var(--red)}
+.alert{background:rgba(217,103,90,.15);border:1px solid var(--red);color:var(--beige);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:14px;line-height:1.4}
+.alert b{color:var(--red)}
+.alert.ok{background:rgba(127,191,122,.12);border-color:var(--green)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cbox{background:var(--card2);border-radius:12px;padding:12px;text-align:center}
+.cbox .cl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.cbox .cv{font-size:34px;font-weight:700;color:var(--gold2);margin:4px 0}
+.cbox .cobj{font-size:12px;min-height:16px;margin-bottom:8px;color:var(--muted)}
+.cbox .cobj.good{color:var(--green)}
+.cbox .cobj.bad{color:var(--red)}
+.cbox .row button{padding:10px 6px;font-size:17px}
+.cbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.cbar div{height:100%;background:var(--gold);width:0;transition:.3s}
+.cbar div.full{background:var(--green)}
+.mrow td .del{padding:5px 8px;font-size:12px}
+.zstate{text-align:center;padding:4px 0 12px}
+.zstate .zi{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.zstate .zt{font-size:38px;font-weight:700;color:#a9b8e8;font-variant-numeric:tabular-nums;margin:2px 0}
+.zstate.awake .zt{color:var(--gold2)}
+.btn-blue{background:#7d8fd1;color:#0e1226;width:100%}
+.stat.blue .v{color:#a9b8e8}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.4}
+.empty{color:var(--muted);text-align:center;padding:14px 0;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:8px 4px;border-bottom:1px solid var(--line)}
+td{padding:9px 4px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right}
+.bars{display:flex;align-items:flex-end;gap:6px;height:110px;margin:6px 0 4px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bar .b{width:100%;background:linear-gradient(var(--gold2),var(--gold));border-radius:6px 6px 2px 2px;min-height:2px}
+.bar .bv{font-size:10px;color:var(--muted);margin-bottom:3px}
+.bar .bl{font-size:10px;color:var(--muted);margin-top:4px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.open{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px 16px 28px;border-top:2px solid var(--gold)}
+.sheet h3{color:var(--gold2);margin-bottom:14px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1a140a;padding:10px 18px;border-radius:20px;font-weight:600;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:60}
+.toast.show{opacity:1}
+.small{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+#printArea{display:none}
+
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff;color:#000;padding:0;max-width:none;font-size:12px}
+  .app,.modal,.toast{display:none!important}
+  #printArea{display:block}
+  #printArea h1{color:#000;font-size:20px;margin-bottom:2px}
+  #printArea .ps{color:#555;font-size:12px;margin-bottom:14px}
+  #printArea h2{font-size:14px;margin:16px 0 6px;padding-bottom:4px;border-bottom:2px solid #b8902f;color:#000;text-transform:capitalize}
+  #printArea table{font-size:12px;margin-bottom:6px}
+  #printArea th{color:#7a5f1c;border-bottom:1px solid #999}
+  #printArea td{border-bottom:1px solid #ddd;color:#000}
+  #printArea .tot td{font-weight:700;background:#f6efdc}
+  #printArea .day{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<noscript><div style="background:#d9675a;color:#fff;padding:14px;border-radius:12px;margin-bottom:14px;font-weight:600;line-height:1.4">⚠️ Cette fiche est ouverte en mode « aperçu », donc les boutons ne marchent pas.<br>Ouvre-la avec Chrome ou Safari, ou utilise le lien internet qu'on t'a envoyé.</div></noscript>
+<div class="app">
+  <header>
+    <div>
+      <h1 id="titre">🍼 Suivi Biberons</h1>
+      <div class="sub" id="soustitre">Touchez ⚙️ pour ajouter le prénom</div>
+    </div>
+    <button class="btn2" onclick="openSettings()">⚙️</button>
+  </header>
+
+  <div id="alerts"></div>
+
+  <!-- TYPE -->
+  <div class="seg" id="typeSeg">
+    <button data-t="bib" onclick="setType('bib')">🍼 Biberon</button>
+    <button data-t="sein" onclick="setType('sein')">🤱 Tétée</button>
+  </div>
+
+  <!-- CHRONO -->
+  <div class="card">
+    <h2 id="chronoTitle">Biberon en cours</h2>
+    <div class="timer">
+      <div class="t" id="chrono">00:00</div>
+      <div class="s" id="chronoInfo"></div>
+    </div>
+    <div id="timerBtns"></div>
+  </div>
+
+  <!-- SAISIE -->
+  <div class="card">
+    <h2 id="formTitle">Ajouter un biberon</h2>
+    <div class="grid2 mb">
+      <div><label>Date</label><input type="date" id="fDate"></div>
+      <div><label>Heure</label><input type="time" id="fHeure"></div>
+    </div>
+    <div class="grid2" id="fieldsRow">
+      <div id="mlWrap"><label>Quantité donnée (ml)</label><input type="number" id="fMl" inputmode="numeric" min="0" placeholder="ex : 90"></div>
+      <div><label id="dureeLabel">Durée (min)</label><input type="number" id="fDuree" inputmode="numeric" min="0" placeholder="ex : 15"></div>
+    </div>
+    <div class="quick" id="quickMl"></div>
+    <div class="nfbox" id="nfWrap">
+      <button type="button" class="nftog" id="nfTog" onclick="toggleNF()"><span class="sw"></span><span>Biberon non fini <b>(N.F)</b></span></button>
+      <div id="resteWrap"><label>Reste dans le biberon (ml) — facultatif</label><input type="number" id="fReste" inputmode="numeric" min="0" placeholder="ex : 30"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" onclick="saveEntry()" id="saveBtn">✓ Enregistrer</button>
+      <button class="btn2" onclick="cancelEdit()" id="cancelBtn" style="display:none;flex:0 0 auto">Annuler</button>
+    </div>
+  </div>
+
+  <!-- JOUR -->
+  <div class="card">
+    <div class="daynav">
+      <button class="btn2" onclick="shiftDay(-1)">‹</button>
+      <div class="d" id="dayLabel"></div>
+      <button class="btn2" onclick="shiftDay(1)">›</button>
+    </div>
+    <div class="stats">
+      <div class="stat big"><div class="v" id="sTotal">0 ml</div><div class="l">Consommation biberons du jour</div></div>
+      <div class="stat"><div class="v" id="sCount">0</div><div class="l">Biberons</div></div>
+      <div class="stat"><div class="v" id="sMoy">–</div><div class="l">Moyenne / biberon</div></div>
+      <div class="stat"><div class="v" id="sDuree">–</div><div class="l">Temps biberons</div></div>
+      <div class="stat"><div class="v" id="sDureeMoy">–</div><div class="l">Durée moy. biberon</div></div>
+      <div class="stat red big"><div class="v" id="sNF">0</div><div class="l">Biberons non finis (N.F)</div></div>
+      <div class="stat rose"><div class="v" id="sTCount">0</div><div class="l">Tétées</div></div>
+      <div class="stat rose"><div class="v" id="sTDuree">–</div><div class="l">Temps au sein</div></div>
+      <div class="stat rose big"><div class="v" id="sTMoy">–</div><div class="l">Durée moyenne / tétée</div></div>
+    </div>
+    <div class="since" id="since"></div>
+  </div>
+
+  <!-- COUCHES -->
+  <div class="card">
+    <h2>Couches · <span id="cDay"></span></h2>
+    <div class="cgrid">
+      <div class="cbox">
+        <div class="cl">💧 Mouillées</div>
+        <div class="cv" id="cM">0</div>
+        <div class="cbar"><div id="cMbar"></div></div>
+        <div class="cobj" id="cMobj"></div>
+        <div class="row"><button class="btn2" onclick="couche('m',-1)">−</button><button class="btn" onclick="couche('m',1)">+1</button></div>
+      </div>
+      <div class="cbox">
+        <div class="cl">💩 Selles</div>
+        <div class="cv" id="cS">0</div>
+        <div class="cbar" style="visibility:hidden"><div></div></div>
+        <div class="cobj" id="cSobj"></div>
+        <div class="row"><button class="btn2" onclick="couche('s',-1)">−</button><button class="btn" onclick="couche('s',1)">+1</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOMMEIL -->
+  <div class="card">
+    <h2>Sommeil · <span id="zDay"></span></h2>
+    <div id="zQuickWrap">
+      <h3 style="margin-top:0">Il vient de se réveiller ? Il a dormi…</h3>
+      <div class="quick" style="margin-top:0;display:grid;grid-template-columns:repeat(3,1fr)">
+        <button onclick="zQuick(30)">30 min</button><button onclick="zQuick(60)">1h</button><button onclick="zQuick(90)">1h30</button>
+        <button onclick="zQuick(120)">2h</button><button onclick="zQuick(150)">2h30</button><button onclick="zQuick(180)">3h</button>
+        <button onclick="zQuick(240)">4h</button><button onclick="zQuick(300)">5h</button><button onclick="zQuick(360)">6h</button>
+      </div>
+      <p class="small" style="text-align:center">Classé tout seul : 🌙 nuit (20h → 8h) ou ☀️ sieste (8h → 20h)</p>
+    </div>
+
+    <div class="stat blue big" style="margin-top:12px"><div class="v" id="zTotal">–</div><div class="l">Sommeil total sur 24h</div></div>
+
+    <h3 id="zNuitTitle">🌙 La nuit dernière (20h → 8h)</h3>
+    <div class="stats" style="margin-bottom:10px">
+      <div class="stat blue"><div class="v" id="zNTotal">–</div><div class="l">Sommeil de nuit</div></div>
+      <div class="stat blue"><div class="v" id="zNLong">–</div><div class="l">Plus longue traite</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="cbox">
+        <div class="cl">Réveils</div>
+        <div class="cv" id="zRev" style="color:#a9b8e8">0</div>
+        <div class="row"><button class="btn2" onclick="zReveil(-1)">−</button><button class="btn-blue" onclick="zReveil(1)">+1</button></div>
+      </div>
+      <div class="cbox">
+        <div class="cl">Comment était la nuit ?</div>
+        <div class="row" style="margin-top:10px;gap:6px" id="zQual">
+          <button class="btn2" data-q="1" onclick="zNuit(1)" style="font-size:24px;padding:8px 0">😊</button>
+          <button class="btn2" data-q="2" onclick="zNuit(2)" style="font-size:24px;padding:8px 0">😐</button>
+          <button class="btn2" data-q="3" onclick="zNuit(3)" style="font-size:24px;padding:8px 0">😫</button>
+        </div>
+        <div class="cobj" id="zQualTxt" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div id="zNList" style="margin-top:6px"></div>
+
+    <h3 id="zJourTitle">☀️ Siestes de la journée (8h → 20h)</h3>
+    <div class="stats">
+      <div class="stat"><div class="v" id="zJTotal">–</div><div class="l">Total siestes</div></div>
+      <div class="stat"><div class="v" id="zJCount">0</div><div class="l">Nombre de siestes</div></div>
+      <div class="stat big"><div class="v" id="zJLong">–</div><div class="l">Plus longue sieste</div></div>
+    </div>
+    <div id="zJList" style="margin-top:6px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Repas du jour</h2>
+    <div id="list"></div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="card">
+    <h2>7 derniers jours</h2>
+    <h3>Biberons (ml / jour)</h3>
+    <div class="bars" id="bars"></div>
+    <table>
+      <thead><tr><th>Jour</th><th class="n">Bib.</th><th class="n">Total</th><th class="n">Tétées</th><th class="n">Sein</th><th class="n">💧</th><th class="n">💩</th><th class="n">😴</th></tr></thead>
+      <tbody id="histo"></tbody>
+    </table>
+  </div>
+
+  <!-- CROISSANCE -->
+  <div class="card">
+    <h2>Croissance · Poids & taille</h2>
+    <div class="stats">
+      <div class="stat"><div class="v" id="gPoids">–</div><div class="l">Dernier poids</div></div>
+      <div class="stat"><div class="v" id="gTaille">–</div><div class="l">Dernière taille</div></div>
+      <div class="stat"><div class="v" id="gGainP">–</div><div class="l">Prise de poids</div></div>
+      <div class="stat"><div class="v" id="gGainT">–</div><div class="l">Gain de taille</div></div>
+    </div>
+    <h3>Nouvelle mesure</h3>
+    <div class="mb"><label>Date</label><input type="date" id="mDate"></div>
+    <div class="grid2 mb">
+      <div><label>Poids (kg)</label><input type="text" id="mPoids" inputmode="decimal" placeholder="ex : 4,250"></div>
+      <div><label>Taille (cm)</label><input type="text" id="mTaille" inputmode="decimal" placeholder="ex : 54,5"></div>
+    </div>
+    <button class="btn mb" onclick="saveMesure()">✓ Enregistrer la mesure</button>
+    <table>
+      <thead><tr><th>Date</th><th class="n">Poids</th><th class="n">Taille</th><th class="n"></th></tr></thead>
+      <tbody id="mesList"></tbody>
+    </table>
+    <button class="btn2" style="width:100%;margin-top:14px" onclick="icsRappel()">📅 Ajouter le rappel mensuel au calendrier</button>
+    <p class="small">Le rappel se met dans l'agenda du téléphone : une alerte chaque mois, le jour anniversaire de la naissance, pour la pesée et la mesure de la taille.</p>
+  </div>
+
+  <!-- EXPORT -->
+  <div class="card">
+    <h2>Export PDF</h2>
+    <div class="row mb">
+      <button class="btn" onclick="exportPDF(1)">📄 Jour affiché</button>
+      <button class="btn" onclick="exportPDF(7)">📄 7 jours</button>
+    </div>
+    <button class="btn2" style="width:100%" onclick="exportPDF(30)">📄 30 jours</button>
+    <p class="small">Sur mobile : la fenêtre d'impression s'ouvre → choisis « Enregistrer en PDF » (Android) ou fais un pincement/zoom sur l'aperçu puis Partager (iPhone).</p>
+  </div>
+  <p class="hint">Outil de suivi personnel : il ne remplace pas l'avis de votre pédiatre, de votre sage-femme ou de la PMI.</p>
+</div>
+
+<!-- REGLAGES -->
+<div class="modal" id="modal" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet">
+    <h3>Réglages</h3>
+    <div class="mb"><label>Prénom du bébé</label><input id="sName" placeholder="Prénom"></div>
+    <div class="mb"><label>Date de naissance</label><input type="date" id="sBirth"></div>
+    <div class="mb"><label>Quantités rapides (ml, séparées par des virgules)</label><input id="sQuick" placeholder="30,60,90,120,150"></div>
+    <div class="mb"><label>Objectif couches mouillées / jour</label><input type="number" id="sObjC" inputmode="numeric" min="1" placeholder="6"></div>
+    <button class="btn mb" onclick="saveSettings()">Enregistrer</button>
+    <div class="row mb">
+      <button class="btn2" onclick="backup()">💾 Sauvegarde</button>
+      <button class="btn2" onclick="document.getElementById('imp').click()">📥 Restaurer</button>
+    </div>
+    <input type="file" id="imp" accept=".json,application/json" style="display:none" onchange="restore(event)">
+    <button class="btn2" style="width:100%" onclick="closeSettings()">Fermer</button>
+    <p class="small">Les données restent sur ce téléphone. Fais une sauvegarde de temps en temps (fichier .json) pour ne rien perdre.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+const KEY='biberons_data_v1';
+let data={entries:[],settings:{name:'',birth:'',quick:[30,60,90,120,150]},timer:null,timerType:'bib',mode:'bib'};
+let viewDate=today();
+let editId=null;
+let tick=null;
+
+function load(){
+  try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);data=Object.assign(data,p);data.settings=Object.assign({name:'',birth:'',quick:[30,60,90,120,150]},p.settings||{});}}catch(e){}
+  data.entries.forEach(e=>{if(!e.type)e.type='bib'});
+  fixData();
+}
+function fixData(){
+  if(!data.couches||typeof data.couches!=='object')data.couches={};
+  if(!Array.isArray(data.mesures))data.mesures=[];
+  if(!(+data.settings.objCouches>0))data.settings.objCouches=6;
+  if(!Array.isArray(data.sommeils))data.sommeils=[];
+  if(data.sleepStart===undefined)data.sleepStart=null;
+  if(!data.nuits||typeof data.nuits!=='object')data.nuits={};
+}
+function objC(){return +data.settings.objCouches||6}
+function cDay(d){return data.couches[d]||{m:0,s:0}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){toast('⚠️ Sauvegarde impossible');}}
+function pad(n){return String(n).padStart(2,'0')}
+function today(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())}
+function parseD(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function fmtD(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function addDays(s,n){const d=parseD(s);d.setDate(d.getDate()+n);return fmtD(d)}
+function longDay(s){return parseD(s).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}
+function shortDay(s){return parseD(s).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})}
+function fmtMin(m){if(!m)return'–';m=Math.round(m);if(m<60)return m+' min';return Math.floor(m/60)+'h'+pad(m%60)}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function dayEntries(d){return data.entries.filter(e=>e.date===d).sort((a,b)=>a.time.localeCompare(b.time))}
+function dayStats(d){
+  const es=dayEntries(d);
+  const bib=es.filter(e=>e.type!=='sein'),sein=es.filter(e=>e.type==='sein');
+  const total=bib.reduce((s,e)=>s+bu(e),0);
+  const nfCount=bib.filter(e=>e.nf).length;
+  const bDur=bib.filter(e=>+e.duree>0);const dur=bDur.reduce((s,e)=>s+(+e.duree),0);
+  const tDur=sein.reduce((s,e)=>s+(+e.duree||0),0);
+  return{es,count:bib.length,total,moy:bib.length?Math.round(total/bib.length):0,dur,durMoy:bDur.length?dur/bDur.length:0,
+         tCount:sein.length,tDur,tMoy:sein.length?tDur/sein.length:0,nfCount};
+}
+function bu(e){return Math.max(0,(+e.ml||0)-(e.nf?(+e.reste||0):0))}
+function bibLabel(e){
+  if(!e.nf)return e.ml+' ml';
+  return +e.reste?`${bu(e)} ml bus / ${e.ml} (reste ${e.reste})`:`${e.ml} ml donnés`;
+}
+
+/* ---------- COUCHES ---------- */
+function couche(k,n){
+  const d=viewDate;const c=Object.assign({m:0,s:0},data.couches[d]);
+  c[k]=Math.max(0,(c[k]||0)+n);data.couches[d]=c;save();render();
+  if(n>0)toast(k==='m'?'💧 Couche mouillée notée':'💩 Selle notée');
+}
+function renderCouches(){
+  const c=cDay(viewDate),o=objC();
+  document.getElementById('cDay').textContent=viewDate===today()?"aujourd'hui":shortDay(viewDate);
+  document.getElementById('cM').textContent=c.m;
+  document.getElementById('cS').textContent=c.s;
+  const bar=document.getElementById('cMbar');bar.style.width=Math.min(100,c.m/o*100)+'%';bar.classList.toggle('full',c.m>=o);
+  const mo=document.getElementById('cMobj');
+  if(c.m>=o){mo.textContent='✓ Objectif '+o+' atteint';mo.className='cobj good'}
+  else if(viewDate===today()){mo.textContent='Objectif '+o+' · encore '+(o-c.m);mo.className='cobj'}
+  else{mo.textContent='⚠️ Sous l\'objectif ('+o+')';mo.className='cobj bad'}
+  const so=document.getElementById('cSobj');
+  so.textContent=c.s?c.s+' selle'+(c.s>1?'s':'')+' ce jour':'Aucune selle notée';so.className='cobj'+(c.s?' good':'');
+}
+
+/* ---------- SOMMEIL ---------- */
+let ztick=null;
+function toLocalISO(d){return fmtD(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())}
+function isoDate(s){const[a,b]=s.split('T');const[y,m,d]=a.split('-').map(Number);const[h,mi]=b.split(':').map(Number);return new Date(y,m-1,d,h,mi)}
+function zMin(z){return Math.max(0,(isoDate(z.fin)-isoDate(z.debut))/60000)}
+/* Classement : milieu du sommeil. Nuit du jour D = D-1 20h → D 8h ; Siestes du jour D = D 8h → 20h */
+function zMid(z){return new Date((isoDate(z.debut).getTime()+isoDate(z.fin).getTime())/2)}
+function zSlot(z){const m=zMid(z),h=m.getHours();if(h>=8&&h<20)return{k:'j',d:fmtD(m)};if(h>=20){const n=new Date(m);n.setDate(n.getDate()+1);return{k:'n',d:fmtD(n)}}return{k:'n',d:fmtD(m)}}
+function zOf(d,k){return data.sommeils.filter(z=>{const s=zSlot(z);return s.k===k&&s.d===d}).sort((a,b)=>a.debut.localeCompare(b.debut))}
+function zAgg(zs){const mins=zs.map(zMin);return{zs,count:zs.length,total:mins.reduce((a,b)=>a+b,0),long:mins.length?Math.max(...mins):0}}
+function zStats(d){const n=zAgg(zOf(d,'n')),j=zAgg(zOf(d,'j'));return{n,j,total:n.total+j.total,count:n.count+j.count,zs:[...n.zs,...j.zs]}}
+function zDay(d){return zStats(d).zs}
+function fmtHM(m){if(!m)return'–';m=Math.round(m);return Math.floor(m/60)+'h'+pad(m%60)}
+function fmtClock(sec){return Math.floor(sec/3600)+':'+pad(Math.floor(sec/60)%60)+':'+pad(sec%60)}
+function startSleep(){data.sleepStart=Date.now();save();render();toast('😴 Bonne sieste !')}
+function stopSleep(){
+  const st=new Date(data.sleepStart),en=new Date();data.sleepStart=null;
+  if(en-st>=60000){data.sommeils.push({id:Date.now().toString(36),debut:toLocalISO(st),fin:toLocalISO(en)});toast('☀️ Sommeil enregistré : '+fmtHM((en-st)/60000))}
+  else toast('Moins d\'1 min : non enregistré');
+  save();render();
+}
+function cancelSleep(){if(!confirm('Annuler ce sommeil en cours ?'))return;data.sleepStart=null;save();render()}
+function zQuick(min){
+  const en=new Date(),st=new Date(en.getTime()-min*60000);
+  data.sommeils.push({id:Date.now().toString(36),debut:toLocalISO(st),fin:toLocalISO(en)});
+  const z=data.sommeils[data.sommeils.length-1],s=zSlot(z);
+  save();viewDate=s.d<=today()?s.d:today();render();
+  toast((s.k==='n'?'🌙 '+fmtHM(min)+' ajouté à la nuit':'☀️ Sieste de '+fmtHM(min)+' notée')+' ✓');
+}
+function nuit(d){return Object.assign({r:0,q:0},data.nuits[d])}
+function zReveil(n){const k=nightKey();const v=nuit(k);v.r=Math.max(0,v.r+n);data.nuits[k]=v;save();render()}
+function zNuit(q){const k=nightKey();const v=nuit(k);v.q=v.q===q?0:q;data.nuits[k]=v;save();render()}
+const QTXT=['','Bonne nuit','Nuit moyenne','Nuit difficile'];
+function delSommeil(id){if(!confirm('Supprimer ce sommeil ?'))return;data.sommeils=data.sommeils.filter(z=>z.id!==id);save();render()}
+function updZ(){
+  const el=document.getElementById('zTimer');if(!el)return;
+  if(data.sleepStart){el.textContent=fmtClock(Math.floor((Date.now()-data.sleepStart)/1000));return}
+  const all=[...data.sommeils].sort((a,b)=>a.fin.localeCompare(b.fin));const last=all[all.length-1];
+  el.textContent=last?fmtClock(Math.max(0,Math.floor((Date.now()-isoDate(last.fin))/1000))):'–';
+}
+function renderSommeil(){
+  document.getElementById('zDay').textContent=viewDate===today()?"aujourd'hui":shortDay(viewDate);
+  const nk=nightKey(),tonight=nk!==viewDate;
+  const nv=nuit(nk);
+  document.getElementById('zNuitTitle').textContent=tonight?'🌙 Cette nuit (20h → 8h)':(viewDate===today()?'🌙 La nuit dernière (20h → 8h)':'🌙 Nuit du '+shortDay(addDays(viewDate,-1))+' au '+shortDay(viewDate));
+  document.getElementById('zRev').textContent=nv.r;
+  document.querySelectorAll('#zQual button').forEach(b=>{const on=+b.dataset.q===nv.q;b.style.background=on?'#7d8fd1':'';b.style.opacity=nv.q&&!on?'.45':'1'});
+  document.getElementById('zQualTxt').textContent=nv.q?QTXT[nv.q]:'Touche un visage';
+  const N=zAgg(zOf(nk,'n')),J=zAgg(zOf(viewDate,'j'));
+  document.getElementById('zTotal').textContent=fmtHM(zStats(viewDate).total);
+  document.getElementById('zNTotal').textContent=fmtHM(N.total);
+  document.getElementById('zNLong').textContent=fmtHM(N.long);
+  document.getElementById('zJTotal').textContent=fmtHM(J.total);
+  document.getElementById('zJCount').textContent=J.count;
+  document.getElementById('zJLong').textContent=fmtHM(J.long);
+  const row=(z,ic,col)=>`<div class="entry"><div class="h" style="color:${col}">${ic}</div><div class="info"><div class="ml">${z.debut.slice(11)} → ${z.fin.slice(11)}</div><div class="du">${fmtHM(zMin(z))}</div></div><div class="act"><button class="btn2" onclick="delSommeil('${z.id}')">🗑</button></div></div>`;
+  document.getElementById('zNList').innerHTML=N.zs.length?N.zs.map(z=>row(z,'🌙','#a9b8e8')).join(''):'<div class="empty">Aucun sommeil de nuit noté</div>';
+  document.getElementById('zJList').innerHTML=J.zs.length?J.zs.map(z=>row(z,'☀️','var(--gold2)')).join(''):'<div class="empty">Aucune sieste notée</div>';
+}
+function nightKey(){return (viewDate===today()&&new Date().getHours()>=20)?addDays(today(),1):viewDate}
+
+/* ---------- CROISSANCE ---------- */
+function num(v){const x=parseFloat(String(v).replace(',','.'));return isFinite(x)&&x>0?x:0}
+function daysBetween(a,b){return Math.round((parseD(b)-parseD(a))/86400000)}
+function lastWith(k){return [...data.mesures].filter(m=>m[k]).sort((a,b)=>a.date.localeCompare(b.date))}
+function fmtKg(p){return p.toFixed(3).replace('.',',').replace(/0+$/,'').replace(/,$/,'')+' kg'}
+function fmtCm(t){return String(t).replace('.',',')+' cm'}
+function saveMesure(){
+  const date=document.getElementById('mDate').value;
+  const poids=num(document.getElementById('mPoids').value),taille=num(document.getElementById('mTaille').value);
+  if(!date){toast('Indique la date');return}
+  if(!poids&&!taille){toast('Indique le poids et/ou la taille');return}
+  if(poids&&poids>30){toast('Poids en kg (ex : 4,250)');return}
+  if(taille&&taille<20){toast('Taille en cm (ex : 54,5)');return}
+  data.mesures.push({id:Date.now().toString(36),date,poids,taille});
+  save();document.getElementById('mPoids').value='';document.getElementById('mTaille').value='';
+  render();toast('Mesure enregistrée ✓');
+}
+function delMesure(id){if(!confirm('Supprimer cette mesure ?'))return;data.mesures=data.mesures.filter(m=>m.id!==id);save();render()}
+function renderCroissance(){
+  if(!document.getElementById('mDate').value)document.getElementById('mDate').value=today();
+  const P=lastWith('poids'),T=lastWith('taille');
+  const lp=P[P.length-1],pp=P[P.length-2],lt=T[T.length-1],pt=T[T.length-2];
+  document.getElementById('gPoids').textContent=lp?fmtKg(lp.poids):'–';
+  document.getElementById('gTaille').textContent=lt?fmtCm(lt.taille):'–';
+  if(lp&&pp){const dd=Math.max(1,daysBetween(pp.date,lp.date));const g=Math.round((lp.poids-pp.poids)*1000);
+    document.getElementById('gGainP').innerHTML=(g>=0?'+':'')+g+' g<div style="font-size:11px;color:var(--muted);font-weight:400">'+Math.round(g/dd)+' g/jour sur '+dd+' j</div>';}
+  else document.getElementById('gGainP').textContent='–';
+  if(lt&&pt){const d=Math.round((lt.taille-pt.taille)*10)/10;
+    document.getElementById('gGainT').innerHTML=(d>=0?'+':'')+String(d).replace('.',',')+' cm<div style="font-size:11px;color:var(--muted);font-weight:400">sur '+daysBetween(pt.date,lt.date)+' j</div>';}
+  else document.getElementById('gGainT').textContent='–';
+  const ms=[...data.mesures].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('mesList').innerHTML=ms.length?ms.map(m=>`<tr class="mrow"><td>${parseD(m.date).toLocaleDateString('fr-FR')}</td><td class="n">${m.poids?fmtKg(m.poids):'–'}</td><td class="n">${m.taille?fmtCm(m.taille):'–'}</td><td class="n"><button class="btn2 del" onclick="delMesure('${m.id}')">🗑</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">Aucune mesure enregistrée</td></tr>';
+}
+function renderAlerts(){
+  const a=[],P=lastWith('poids'),T=lastWith('taille');
+  const lp=P[P.length-1],lt=T[T.length-1];
+  if(!lp)a.push('⚖️ <b>Aucune pesée enregistrée</b> : note son poids dans « Croissance ».');
+  else{const d=daysBetween(lp.date,today());if(d>=30)a.push(`⚖️ <b>Pesée mensuelle à faire</b> : dernière pesée il y a ${d} jours.`);}
+  if(!lt)a.push('📏 <b>Aucune taille enregistrée</b> : note sa taille dans « Croissance ».');
+  else{const d=daysBetween(lt.date,today());if(d>=30)a.push(`📏 <b>Mesure de la taille à faire</b> : dernière mesure il y a ${d} jours.`);}
+  const y=addDays(today(),-1),cy=data.couches[y];
+  if(cy&&cy.m<objC())a.push(`💧 <b>Hier : ${cy.m} couche${cy.m>1?'s':''} mouillée${cy.m>1?'s':''}</b> sur ${objC()} minimum. Surveille l'hydratation et demande conseil si ça se répète.`);
+  document.getElementById('alerts').innerHTML=a.map(t=>`<div class="alert">${t}</div>`).join('');
+}
+function icsRappel(){
+  const s=data.settings;const nm=s.name||'bébé';
+  const now=new Date();let start;
+  if(s.birth){const b=parseD(s.birth);start=new Date(now.getFullYear(),now.getMonth(),Math.min(b.getDate(),28));if(start<=now)start.setMonth(start.getMonth()+1);}
+  else{start=new Date(now.getFullYear(),now.getMonth()+1,now.getDate()>28?28:now.getDate());}
+  const ymd=start.getFullYear()+pad(start.getMonth()+1)+pad(start.getDate());
+  const stamp=now.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Suivi Bebe//FR','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+    'UID:pesee-'+Date.now()+'@suivi-bebe','DTSTAMP:'+stamp,'DTSTART:'+ymd+'T100000','DTEND:'+ymd+'T101500',
+    'RRULE:FREQ=MONTHLY','SUMMARY:⚖️📏 Pesée & taille de '+nm,
+    'DESCRIPTION:Peser et mesurer '+nm+' puis noter les valeurs dans la fiche de suivi.',
+    'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:Pesée & taille de '+nm,'TRIGGER:PT0M','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='rappel-pesee-'+nm+'.ics';a.click();
+  toast('Ouvre le fichier pour l\'ajouter à ton agenda');
+}
+
+/* ---------- N.F ---------- */
+let nfOn=false;
+function toggleNF(){setNF(!nfOn)}
+function setNF(v){
+  nfOn=v;
+  document.getElementById('nfTog').classList.toggle('on',v);
+  document.getElementById('resteWrap').style.display=v?'block':'none';
+  if(!v)document.getElementById('fReste').value='';
+}
+
+/* ---------- TYPE ---------- */
+function setType(t){
+  if(data.timer&&data.timerType!==t){toast('Termine d\'abord le chrono en cours');return}
+  data.mode=t;save();applyType();
+}
+function applyType(){
+  const t=data.mode,sein=t==='sein';
+  document.querySelectorAll('#typeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.getElementById('mlWrap').style.display=sein?'none':'';
+  document.getElementById('quickMl').style.display=sein?'none':'';
+  document.getElementById('nfWrap').style.display=sein?'none':'';
+  document.getElementById('fieldsRow').style.gridTemplateColumns=sein?'1fr':'1fr 1fr';
+  document.getElementById('dureeLabel').textContent=sein?'Durée de la tétée (min)':'Durée (min)';
+  document.getElementById('chronoTitle').textContent=sein?'Tétée en cours':'Biberon en cours';
+  if(!editId){
+    document.getElementById('formTitle').textContent=sein?'Ajouter une tétée':'Ajouter un biberon';
+  }
+  renderTimer();
+}
+
+/* ---------- RENDER ---------- */
+function render(){
+  const s=data.settings;
+  document.getElementById('titre').textContent='🍼 '+(s.name?'Suivi de '+s.name:'Suivi Bébé');
+  document.getElementById('soustitre').textContent=s.birth?ageText(s.birth):'Touchez ⚙️ pour ajouter le prénom';
+  document.getElementById('quickMl').innerHTML=(s.quick||[]).map(q=>`<button onclick="setMl(${q})">${q}</button>`).join('');
+  const st=dayStats(viewDate);
+  document.getElementById('dayLabel').textContent=viewDate===today()?"Aujourd'hui":longDay(viewDate);
+  document.getElementById('sTotal').textContent=st.total+' ml';
+  document.getElementById('sCount').textContent=st.count;
+  document.getElementById('sMoy').textContent=st.count?st.moy+' ml':'–';
+  document.getElementById('sDuree').textContent=fmtMin(st.dur);
+  document.getElementById('sDureeMoy').textContent=fmtMin(st.durMoy);
+  document.getElementById('sNF').textContent=st.count?st.nfCount+' / '+st.count:'0';
+  document.getElementById('sTCount').textContent=st.tCount;
+  document.getElementById('sTDuree').textContent=fmtMin(st.tDur);
+  document.getElementById('sTMoy').textContent=fmtMin(st.tMoy);
+  // since last
+  const all=[...data.entries].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const last=all[all.length-1];
+  const sinceEl=document.getElementById('since');
+  if(last&&viewDate===today()){
+    const[y,m,d]=last.date.split('-').map(Number);const[h,mi]=last.time.split(':').map(Number);
+    const diff=(Date.now()-new Date(y,m-1,d,h,mi).getTime())/60000;
+    const what=last.type==='sein'?'tétée '+fmtMin(last.duree):bibLabel(last)+(last.nf?' · N.F':'');
+    sinceEl.innerHTML=diff>=0?`Dernier repas il y a <b>${fmtMin(diff)||'0 min'}</b> (${last.time} · ${what})`:'';
+  }else sinceEl.innerHTML='';
+  // list
+  const L=document.getElementById('list');
+  if(!st.es.length)L.innerHTML='<div class="empty">Aucun repas enregistré ce jour</div>';
+  else L.innerHTML=st.es.map((e,i)=>{
+    let gap='';
+    if(i>0){const[h1,m1]=st.es[i-1].time.split(':').map(Number);const[h2,m2]=e.time.split(':').map(Number);gap=' · écart '+fmtMin((h2*60+m2)-(h1*60+m1));}
+    const main=e.type==='sein'
+      ?`<div class="ml sein">🤱 Tétée · ${fmtMin(e.duree)}</div><div class="du">au sein${gap}</div>`
+      :`<div class="ml">🍼 ${bibLabel(e)}${e.nf?'<span class="nf">N.F</span>':''}</div><div class="du">${+e.duree?e.duree+' min':'durée non notée'}${gap}</div>`;
+    return`<div class="entry"><div class="h">${e.time}</div><div class="info">${main}</div><div class="act"><button class="btn2" onclick="editEntry('${e.id}')">✏️</button><button class="btn2" onclick="delEntry('${e.id}')">🗑</button></div></div>`;
+  }).join('');
+  // history
+  const days=[];for(let i=6;i>=0;i--)days.push(addDays(today(),-i));
+  const stats=days.map(d=>({d,...dayStats(d)}));
+  const max=Math.max(1,...stats.map(x=>x.total));
+  document.getElementById('bars').innerHTML=stats.map(x=>`<div class="bar"><div class="bv">${x.total||''}</div><div class="b" style="height:${x.total/max*80}%"></div><div class="bl">${shortDay(x.d).split(' ')[0]}</div></div>`).join('');
+  document.getElementById('histo').innerHTML=[...stats].reverse().map(x=>`<tr><td style="text-transform:capitalize">${shortDay(x.d)}</td><td class="n">${x.count}${x.nfCount?' <span style="color:var(--red);font-size:11px">('+x.nfCount+' N.F)</span>':''}</td><td class="n">${x.total} ml</td><td class="n">${x.tCount}</td><td class="n">${fmtMin(x.tDur)}</td><td class="n" style="color:${cDay(x.d).m>=objC()?'var(--green)':(data.couches[x.d]&&x.d<today()?'var(--red)':'inherit')}">${cDay(x.d).m}</td><td class="n">${cDay(x.d).s}</td><td class="n">${fmtHM(zStats(x.d).total)}</td></tr>`).join('');
+  renderCouches();renderSommeil();renderCroissance();renderAlerts();
+  applyType();
+}
+function ageText(b){
+  const d=parseD(b),n=new Date();n.setHours(0,0,0,0);const days=Math.round((n-d)/86400000);
+  if(days<0)return'';if(days<31)return days+' jour'+(days>1?'s':'');
+  const w=Math.floor(days/7);if(days<92)return w+' semaines';
+  return Math.floor(days/30.44)+' mois';
+}
+
+/* ---------- FORM ---------- */
+function resetForm(){
+  document.getElementById('fDate').value=today();
+  document.getElementById('fHeure').value=nowTime();
+  document.getElementById('fMl').value='';
+  document.getElementById('fDuree').value='';
+  setNF(false);
+  editId=null;
+  document.getElementById('saveBtn').textContent='✓ Enregistrer';
+  document.getElementById('cancelBtn').style.display='none';
+  applyType();
+}
+function setMl(v){document.getElementById('fMl').value=v}
+function saveEntry(){
+  const type=data.mode;
+  const date=document.getElementById('fDate').value,time=document.getElementById('fHeure').value;
+  const ml=type==='sein'?0:parseInt(document.getElementById('fMl').value,10);
+  const duree=parseInt(document.getElementById('fDuree').value,10)||0;
+  if(!date||!time){toast('Date et heure requises');return}
+  if(type==='bib'&&!(ml>0)){toast('Indique la quantité en ml');return}
+  if(type==='sein'&&!(duree>0)){toast('Indique la durée de la tétée');return}
+  const nf=type==='bib'&&nfOn;
+  const reste=nf?(parseInt(document.getElementById('fReste').value,10)||0):0;
+  if(reste>=ml&&nf){toast('Le reste doit être inférieur à la quantité donnée');return}
+  if(editId){const e=data.entries.find(x=>x.id===editId);Object.assign(e,{type,date,time,ml,duree,nf,reste});toast('Modifié')}
+  else{data.entries.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),type,date,time,ml,duree,nf,reste});toast(type==='sein'?'Tétée enregistrée ✓':'Biberon enregistré ✓')}
+  save();viewDate=date;resetForm();render();
+}
+function editEntry(id){
+  const e=data.entries.find(x=>x.id===id);if(!e)return;
+  if(data.timer){toast('Termine d\'abord le chrono en cours');return}
+  editId=id;data.mode=e.type||'bib';
+  document.getElementById('fDate').value=e.date;document.getElementById('fHeure').value=e.time;
+  document.getElementById('fMl').value=e.ml||'';document.getElementById('fDuree').value=e.duree||'';
+  setNF(!!e.nf);document.getElementById('fReste').value=e.reste||'';
+  applyType();
+  document.getElementById('formTitle').textContent=e.type==='sein'?'Modifier la tétée':'Modifier le biberon';
+  document.getElementById('saveBtn').textContent='✓ Mettre à jour';
+  document.getElementById('cancelBtn').style.display='block';
+  document.getElementById('formTitle').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelEdit(){resetForm()}
+function delEntry(id){if(!confirm('Supprimer ce repas ?'))return;data.entries=data.entries.filter(x=>x.id!==id);save();render();toast('Supprimé')}
+function shiftDay(n){const d=addDays(viewDate,n);if(d>today())return;viewDate=d;render()}
+
+/* ---------- CHRONO ---------- */
+function renderTimer(){
+  const b=document.getElementById('timerBtns');const sein=data.mode==='sein';
+  if(data.timer){
+    b.innerHTML=`<div class="row"><button class="btn-green" onclick="stopTimer()">■ Terminer</button><button class="btn2" style="flex:0 0 auto" onclick="cancelTimer()">Annuler</button></div>`;
+    const st=new Date(data.timer);
+    document.getElementById('chronoInfo').textContent='Démarré à '+pad(st.getHours())+':'+pad(st.getMinutes());
+    if(!tick)tick=setInterval(updChrono,1000);updChrono();
+  }else{
+    b.innerHTML=`<button class="btn" onclick="startTimer()">▶ ${sein?'Démarrer la tétée':'Démarrer le biberon'}</button>`;
+    document.getElementById('chrono').textContent='00:00';
+    document.getElementById('chronoInfo').textContent=sein?'Démarre le chrono au début de la tétée':'Démarre le chrono au début du biberon';
+    if(tick){clearInterval(tick);tick=null}
+  }
+}
+function updChrono(){if(!data.timer)return;const s=Math.floor((Date.now()-data.timer)/1000);document.getElementById('chrono').textContent=(s>=3600?Math.floor(s/3600)+':':'')+pad(Math.floor(s/60)%60)+':'+pad(s%60)}
+function startTimer(){if(editId)resetForm();data.timer=Date.now();data.timerType=data.mode;save();renderTimer()}
+function cancelTimer(){if(!confirm('Annuler le chrono ?'))return;data.timer=null;save();renderTimer()}
+function stopTimer(){
+  const st=new Date(data.timer);const min=Math.max(1,Math.round((Date.now()-data.timer)/60000));
+  const type=data.timerType||'bib';
+  data.timer=null;data.mode=type;save();
+  const date=fmtD(st),time=pad(st.getHours())+':'+pad(st.getMinutes());
+  if(type==='sein'){
+    data.entries.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),type:'sein',date,time,ml:0,duree:min});
+    save();viewDate=date;resetForm();render();toast('Tétée enregistrée : '+min+' min ✓');
+    return;
+  }
+  resetForm();
+  document.getElementById('fDate').value=date;
+  document.getElementById('fHeure').value=time;
+  document.getElementById('fDuree').value=min;
+  document.getElementById('fMl').focus();
+  document.getElementById('formTitle').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('Durée : '+min+' min — indique les ml');
+}
+
+/* ---------- REGLAGES ---------- */
+function openSettings(){const s=data.settings;document.getElementById('sName').value=s.name||'';document.getElementById('sBirth').value=s.birth||'';document.getElementById('sQuick').value=(s.quick||[]).join(',');document.getElementById('sObjC').value=objC();document.getElementById('modal').classList.add('open')}
+function closeSettings(){document.getElementById('modal').classList.remove('open')}
+function saveSettings(){
+  data.settings.name=document.getElementById('sName').value.trim();
+  data.settings.birth=document.getElementById('sBirth').value;
+  data.settings.quick=document.getElementById('sQuick').value.split(',').map(x=>parseInt(x,10)).filter(x=>x>0).slice(0,6);
+  data.settings.objCouches=parseInt(document.getElementById('sObjC').value,10)||6;
+  save();closeSettings();render();toast('Réglages enregistrés');
+}
+function backup(){
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='biberons-sauvegarde-'+today()+'.json';a.click();
+}
+function restore(ev){
+  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const p=JSON.parse(r.result);if(!Array.isArray(p.entries))throw 0;if(!confirm('Remplacer les données actuelles par cette sauvegarde ?'))return;data=Object.assign(data,p);data.entries.forEach(e=>{if(!e.type)e.type='bib'});fixData();save();render();closeSettings();toast('Sauvegarde restaurée')}catch(e){toast('Fichier invalide')}};
+  r.readAsText(f);ev.target.value='';
+}
+
+/* ---------- PDF ---------- */
+function exportPDF(n){
+  const end=n===1?viewDate:today();
+  const days=[];for(let i=0;i<n;i++)days.push(addDays(end,-i));
+  const filled=days.filter(d=>dayEntries(d).length||data.couches[d]||zDay(d).length||data.nuits[d]);
+  if(!filled.length&&!data.mesures.length){toast('Aucune donnée sur cette période');return}
+  if(!filled.length)filled.push(end);
+  const s=data.settings;
+  let tot=0,cnt=0,tc=0,td=0,cmT=0,csT=0,zT=0;
+  let html=`<h1>Suivi de bébé${s.name?' — '+esc(s.name):''}</h1><div class="ps">${n===1?longDay(end):'Du '+longDay(filled[filled.length-1])+' au '+longDay(filled[0])}${s.birth?' · Âge : '+ageText(s.birth):''} · Édité le ${new Date().toLocaleDateString('fr-FR')}</div>`;
+  if(n>1){
+    html+=`<h2>Récapitulatif</h2><table><thead><tr><th>Jour</th><th class="n">Biberons</th><th class="n">N.F</th><th class="n">Total</th><th class="n">Moy./bib.</th><th class="n">Tétées</th><th class="n">Temps sein</th><th class="n">Couches 💧</th><th class="n">Selles</th><th class="n">Sommeil</th><th class="n">Réveils nuit</th><th class="n">Nuit</th></tr></thead><tbody>`;let rT=0;
+    let nfT=0;
+    filled.forEach(d=>{const st=dayStats(d);tot+=st.total;cnt+=st.count;tc+=st.tCount;td+=st.tDur;nfT+=st.nfCount;html+=`<tr><td style="text-transform:capitalize">${longDay(d)}</td><td class="n">${st.count}</td><td class="n">${st.nfCount}</td><td class="n">${st.total} ml</td><td class="n">${st.count?st.moy+' ml':'–'}</td><td class="n">${st.tCount}</td><td class="n">${fmtMin(st.tDur)}</td><td class="n">${cDay(d).m}${cDay(d).m<objC()?' ⚠':''}</td><td class="n">${cDay(d).s}</td><td class="n">${fmtHM(zStats(d).total)}</td><td class="n">${nuit(d).r}</td><td class="n">${['–','😊','😐','😫'][nuit(d).q]}</td></tr>`;rT+=nuit(d).r;cmT+=cDay(d).m;csT+=cDay(d).s;zT+=zStats(d).total});
+    const nd=filled.length;
+    html+=`<tr class="tot"><td>Moyenne / jour (${nd} j)</td><td class="n">${(cnt/nd).toFixed(1)}</td><td class="n">${nfT} au total</td><td class="n">${Math.round(tot/nd)} ml</td><td class="n">${cnt?Math.round(tot/cnt)+' ml':'–'}</td><td class="n">${(tc/nd).toFixed(1)}</td><td class="n">${fmtMin(td/nd)}</td><td class="n">${(cmT/nd).toFixed(1)}</td><td class="n">${(csT/nd).toFixed(1)}</td><td class="n">${fmtHM(zT/nd)}</td><td class="n">${(rT/nd).toFixed(1)}</td><td class="n"></td></tr></tbody></table>`;
+  }
+  filled.forEach(d=>{
+    const st=dayStats(d);
+    html+=`<div class="day"><h2>${longDay(d)}</h2><table><thead><tr><th>Heure</th><th>Type</th><th class="n">Quantité</th><th class="n">Durée</th></tr></thead><tbody>`;
+    st.es.forEach(e=>{const sein=e.type==='sein';html+=`<tr><td>${e.time}</td><td>${sein?'Tétée (sein)':(e.nf?'<b>Biberon N.F</b>':'Biberon')}</td><td class="n">${sein?'–':bibLabel(e)}</td><td class="n">${+e.duree?fmtMin(e.duree):'–'}</td></tr>`});
+    html+=`<tr class="tot"><td colspan="2">${st.count} biberon${st.count>1?'s':''}${st.nfCount?' (dont '+st.nfCount+' N.F)':''} · ${st.tCount} tétée${st.tCount>1?'s':''}</td><td class="n">${st.total} ml</td><td class="n">Sein : ${fmtMin(st.tDur)}</td></tr></tbody></table><div style="font-size:12px;margin-top:2px">Couches : <b>${cDay(d).m} mouillée${cDay(d).m>1?'s':''}</b> (objectif ${objC()})${cDay(d).m<objC()?' ⚠ sous l\'objectif':' ✓'} · <b>${cDay(d).s} selle${cDay(d).s>1?'s':''}</b></div>${(()=>{const n=nuit(d);return (n.r||n.q)?`<div style="font-size:12px;margin-top:2px">Nuit précédente : <b>${n.q?QTXT[n.q]:'non notée'}</b> · <b>${n.r} réveil${n.r>1?'s':''}</b></div>`:''})()}${(()=>{const z=zStats(d);return z.count?`<div style="font-size:12px;margin-top:2px">Sommeil : <b>${fmtHM(z.total)}</b> en ${z.count} fois (plus long : ${fmtHM(z.long)}) · ${z.zs.map(x=>x.debut.slice(11)+'→'+x.fin.slice(11)).join(', ')}</div>`:''})()}</div>`;
+  });
+  if(data.mesures.length){
+    const ms=[...data.mesures].sort((a,b)=>a.date.localeCompare(b.date));
+    html+=`<div class="day"><h2>Croissance (poids & taille)</h2><table><thead><tr><th>Date</th><th>Âge</th><th class="n">Poids</th><th class="n">Taille</th></tr></thead><tbody>`;
+    ms.forEach(m=>{let age='';if(s.birth){const dd=daysBetween(s.birth,m.date);age=dd<0?'':dd<31?dd+' j':dd<92?Math.floor(dd/7)+' sem.':Math.floor(dd/30.44)+' mois';}
+      html+=`<tr><td>${parseD(m.date).toLocaleDateString('fr-FR')}</td><td>${age}</td><td class="n">${m.poids?fmtKg(m.poids):'–'}</td><td class="n">${m.taille?fmtCm(m.taille):'–'}</td></tr>`});
+    html+=`</tbody></table></div>`;
+  }
+  document.getElementById('printArea').innerHTML=html;
+  const old=document.title;document.title='Suivi-'+(s.name||'bebe')+'-'+end;
+  setTimeout(()=>{window.print();document.title=old},100);
+}
+
+load();resetForm();render();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!editId)document.getElementById('fHeure').value=nowTime();render()}});
+</script>
+</body>
+</html>
